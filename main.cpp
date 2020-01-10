@@ -94,7 +94,7 @@ int main(int argv, char** argc){
       }
     }
     i++;
-  }while(i<50000 && no_change<10);
+  }while(i<N && no_change<10);
 
   std::cout<<std::endl<<"After AG ("<<i<<"-iterations):"<<std::endl;
   for(int i=0;i<1;i++){

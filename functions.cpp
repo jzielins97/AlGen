@@ -128,7 +128,7 @@ void selection(Chromosome **pop, int N){
   for(int i=0;i<N;i++){
     if(pop[i]->getGoalFunction() > A) A=pop[i]->getGoalFunction() + 5;
   }
-  std::cout<<A<<std::endl;
+  // std::cout<<A<<std::endl;
   for(int i=0;i<N;i++){
     tmp[i] = new Chromosome(pop[i]);
     D[i+1] = A-pop[i]->getGoalFunction();
