@@ -25,23 +25,50 @@ int defineProducts(std::vector<Product*> *products){
   n++;
   products->push_back(new Product(380,23,710,27,16,26.59,"WHOOPER JR. with Cheese"));
   n++;
+  products->push_back(new Product(310,12,290,46,3,2.59,"Fries small"));
+  n++;
+  products->push_back(new Product(400,16,380,60,4,5.90,"Fries medium"));
+  n++;
+  products->push_back(new Product(500,20,470,75,5,6.90,"Fries big"));
+  n++;
+  products->push_back(new Product(380,22,860,31,2,6.50,"Mozzarella Sticks (4 pieces)"));
+  n++;
+  products->push_back(new Product(230,16,530,8,18,10.48,"BLT Garden Salad"));
+  n++;
+  products->push_back(new Product(330,24,730,14,1,8.75,"Caesar Garden Fresh Salad"));
+  n++;
+
 
   return n;
 }
 
-void cross(int iN, int iC, int **a, int **b){
-	//wybor chromosomu
-
-	int x = (rand() % iC) ;
-	int y = (rand() % iC) ;
+void cross(int iN, int iC, Chromosome** ch, int t1, int t2, int iCal, int iFat, int iSod, int iCarb, int iProt, std::vector<Product*>* products){
+  Chromosome *tmp1 = new Chromosome(ch[t1]);
+  Chromosome *tmp2 = new Chromosome(ch[t2]);
+  //wybor chromosomu
+  int x = (rand() % iC) ;
+  int y = (rand() % iC) ;
 	//wybor miejsca
 	int i = (rand() % (iN-1)) +1;
   int c = 0;
+
+  int **a = tmp1->getC();
+  int **b = tmp2->getC();
 	for(int j=0; j<i; j++){
     c = a[x][j];
 		a[x][j]=b[y][j];
 		b[y][j]=c;
 	}
+  double f1 = goalFunction(iCal, iFat, iSod, iCarb, iProt, tmp1, products);
+  double f2 = goalFunction(iCal, iFat, iSod, iCarb, iProt, tmp2, products);
+
+  if(f1 < ch[t1]->getGoalFunction() && f1 < ch[t2]->getGoalFunction()){
+    ch[t1] = new Chromosome(tmp1);
+    ch[t2] = new Chromosome (tmp2);
+  }else if(f2 < ch[t1]->getGoalFunction() && f2 < ch[t2]->getGoalFunction()){
+    ch[t1] = new Chromosome(tmp1);
+    ch[t2] = new Chromosome (tmp2);
+  }
 }
 
 double goalFunction(int iCal, int iFat, int iSod, int iCarb, int iProt, Chromosome* c, std::vector<Product*>* products){
@@ -50,8 +77,10 @@ double goalFunction(int iCal, int iFat, int iSod, int iCarb, int iProt, Chromoso
 
   for(int i=0; i<c->ic;i++){
     int cal = 0, fat = 0, sod = 0, carb = 0, prot = 0;
+    int sum=0; //sum of all products in the chromosome to see if it is not empty
     double price = 0, k = 0;
-    double wMinus = 5.0, wPlus = 2.0; //weights for punishment for case bellow given value (minus) and above given value (plus)
+    double wMinus = 8, wPlus = 5; //weights for punishment for case bellow given value (minus) and above given value (plus)
+    double lower = 0.95, upper = 1.1; //treshold for the weights
     f[i] = 0;
     for(int ij=0; ij<c->N; ij++){
       cal += c->get(i,ij) * products->at(ij)->getCal();
@@ -60,56 +89,52 @@ double goalFunction(int iCal, int iFat, int iSod, int iCarb, int iProt, Chromoso
       carb += c->get(i,ij) * products->at(ij)->getCarb();
       prot += c->get(i,ij) * products->at(ij)->getProt();
       price += c->get(i,ij) * products->at(ij)->getPrice();
+      sum += c->get(i,ij);
     }
 
     f[i] = sqrt( pow(1.0*(iCal-cal)/iCal,2) + pow(1.0*(iFat-fat)/iFat,2) +
                  pow(1.0*(iSod-sod)/iSod,2) + pow(1.0*(iCarb-carb)/iCal,2) +
                  pow(1.0*(iProt-prot)/iProt,2) + pow(price,2));
 
-    if(cal-iCal < 0){
-      if( 1.0*(iCal-cal)/iCal > 0.1){
-        k += wMinus*(iCal-cal)/iCal;
-      }
-    }else if(1.0*(cal-iCal)/iCal > 0.2){
+    if(1.0*cal/iCal < lower){
+      k += wMinus*(iCal-cal)/iCal;
+    }else if(1.0*cal/iCal > upper){
       k += wPlus*(cal-iCal)/iCal;
     }
 
-    if(fat-iFat < 0){
-      if( 1.0*(iFat-fat)/iFat > 0.1){
-        k += wMinus*(iFat-fat)/iFat;
-      }
-    }else if(1.0*(fat-iFat)/iFat > 0.2){
+    if(1.0*fat/iFat < lower){
+      k += wMinus*(iFat-fat)/iFat;
+    }else if(1.0*fat/iFat > upper){
       k += wPlus*(fat-iFat)/iFat;
     }
 
-    if(sod-iSod < 0){
-      if( 1.0*(iSod-sod)/iSod > 0.1){
-        k += wMinus*(iSod-sod)/iSod;
-      }
-    }else if(1.0*(sod-iSod)/iSod > 0.2){
+    if(1.0*sod/iSod < lower){
+      k += wMinus*(iSod-sod)/iSod;
+    }else if(1.0*sod/iSod > upper){
       k += wPlus*(sod-iSod)/iSod;
     }
 
-    if(carb-iCarb < 0){
-      if( 1.0*(iCarb-carb)/iCarb > 0.1){
-        k += wMinus*(iCarb-carb)/iCarb;
-      }
-    }else if(1.0*(carb-iCarb)/iCarb > 0.2){
+    if(1.0*carb/iCarb < lower){
+      k += wMinus*(iCarb-carb)/iCarb;
+    }else if(1.0*carb/iCarb > upper){
       k += wPlus*(carb-iCarb)/iCarb;
     }
 
-    if(prot-iProt < 0){
-      if( 1.0*(iProt-prot)/iProt > 0.1){
-        k += wMinus*(iProt-prot)/iProt;
-      }
-    }else if(1.0*(prot-iProt)/iProt > 0.2){
+    if(1.0*prot/iProt < lower){
+      k += wMinus*(iProt-prot)/iProt;
+    }else if(1.0*prot/iProt > upper){
       k += wPlus*(prot-iProt)/iProt;
     }
+
+    if(sum == 0) k+=50;
     f[i] += k;
 
+    std::cout<<"\tif "<<i;
     if(i==0) f_min = f[i];
     else if (f[i] < f_min) f_min = f[i];
+    std::cout<<" ..."<<std::endl;
   }
+
 
 
   c->goal = f_min;
@@ -139,7 +164,7 @@ void selection(Chromosome **pop, int N){
   }
   for(int i=0;i<N;i++){
     double rnd= 1.0*rand()/RAND_MAX;
-    int j = 0;
+    int j = 1 ;
     while(rnd>D[j]){
       j++;
     }

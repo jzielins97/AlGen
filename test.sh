@@ -1,13 +1,19 @@
 #!/bin/bash
 
-N=5000
+N=200
 iCh=1
 
-rm test.log
-touch test.log
-for i in {1..100}
+rm output.log
+touch output.log
+i=$(cat output.log | wc -l)
+while [ $i -lt 200 ]
 do
-  ./AlGen $N $iCh | grep f= >> test.log
+    echo $i
+    ./AlGen $N $iCh 740 46 1080 50 34 >> output.log
+    i=$(cat output.log | grep f= | wc -l)
 done
 
-cat test.log | grep 19. | wc -l
+value=$(cat output.log | grep "f=20.19" | wc -l)
+all=$(cat output.log | grep "f=" | wc -l)
+
+echo "$value / $all"

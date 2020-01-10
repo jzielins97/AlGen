@@ -117,10 +117,21 @@ void Chromosome::print(){
   std::cout<<"f="<<goal<<std::endl<<std::endl;
 }
 
+void Chromosome::print(std::vector<Product*>* products){
+  for(int i=0; i<N; i++){
+    for(int ij=0; ij<ic; ij++){
+      std::cout<<c[ij][i]<<" ";
+    }
+    std::cout<<"\t"<<products->at(i)->getName()<<std::endl;
+  }
+  std::cout<<"f="<<goal<<std::endl<<std::endl;
+}
+
 int Chromosome::mutate(){
   if(1.0*rand()/RAND_MAX <= MUTATION){
     int i = rand() % N;
     int j = rand() % ic;
+    // std::cout<<j<<" "<<i;
     if(rand() % 2){
       c[j][i]++;
       if(c[j][i] > GEN_MAX-1){

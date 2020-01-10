@@ -7,11 +7,11 @@ int main(int argv, char** argc){
   int N = 50; //in generation
 
   ic = 1;
-  CALORIES = 660;
-  FAT = 39;
-  SODIUM = 690;
-  CARBS = 49;
-  PROTEIN = 18;
+  CALORIES = 2285;
+  FAT = 76;
+  SODIUM = 6000;
+  CARBS = 314;
+  PROTEIN = 86;
   N = 50;
 
   if(argv > 1){
@@ -44,6 +44,7 @@ int main(int argv, char** argc){
   srand(time(NULL));
 
   nProducts = defineProducts(products);
+  // std::cout<<"Defined products"<<std::endl;
 
   Chromosome **c;
   c = new Chromosome*[N];
@@ -52,6 +53,7 @@ int main(int argv, char** argc){
     goalFunction(CALORIES, FAT, SODIUM, CARBS, PROTEIN, c[i], products);
     //if(i%1000==0)c[i]->print();
   }
+  // std::cout<<"Creating chromosomes"<<std::endl;
 
   // Chromosome *c1;
   // std::cout<<"Testing ------------------------"<<std::endl;
@@ -67,24 +69,27 @@ int main(int argv, char** argc){
   int i=0;
   int no_change = 0;
   do{
+
     // std::cout<<i<<"------------------"<<no_change<<std::endl;
-    // int nCross = rand() % N; //number of crossings to perfom
-    //for(int ij=0;ij<nCross;ij++){ //crossing loop
+    int nCross = rand() % N; //number of crossings to perfom
+    for(int ij=0;ij<nCross;ij++){ //crossing loop
       int iCross1 = rand() % N;
       int iCross2 = rand() % N;
-      cross(nProducts, ic, c[iCross1]->getC(), c[iCross2]->getC());
-    //}
-
+      cross(nProducts, ic, c, iCross1, iCross2, CALORIES, FAT, SODIUM, CARBS, PROTEIN, products);
+      //goalFunction(CALORIES, FAT, SODIUM, CARBS, PROTEIN, c[q], products);
+    }
     // int nMutate = rand() % N;//number of mutations to perform
-    //for(int ij=0; ij<nMutate; ij++){//mutation loop
-      int iMutate = rand() % N;
-      c[iMutate]->mutate();
-    //}
+    for(int ij=0; ij<N; ij++){//mutation loop
+      std::cout<<i;
+      c[ij]->mutate();
+      std::cout<<" "<<ij<<" goalFunction ";
+      goalFunction(CALORIES, FAT, SODIUM, CARBS, PROTEIN, c[ij], products);
+      std::cout<<" done"<<std::endl;
+    }
+    std::cout<<"Selection";
     selection(c, N);
+    std::cout<<"\tdone"<<std::endl;
 
-    // for(int ij=0;ij<N;ij++){
-    //   goalFunction(CALORIES, FAT, SODIUM, CARBS, PROTEIN, c[ij], products);
-    // }
     no_change++;
     for(int ij=0; ij<N-1; ij++){
       if(abs(c[ij]->getGoalFunction() - c[ij+1]->getGoalFunction()) > 0.0001){
@@ -94,11 +99,11 @@ int main(int argv, char** argc){
       }
     }
     i++;
-  }while(i<N && no_change<10);
+  }while(i<50000 && no_change<10);
 
   std::cout<<std::endl<<"After AG ("<<i<<"-iterations):"<<std::endl;
   for(int i=0;i<1;i++){
-    c[i]->print();
+    c[i]->print(products);
   }
 
   std::cout<<"AG time: "<<float( clock() - begin_time ) / CLOCKS_PER_SEC<<"s"<<std::endl;

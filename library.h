@@ -46,9 +46,10 @@ public:
   double getGoalFunction();
   //functions
   void print();
+  void print(std::vector<Product*>* products);
   int mutate();
   //befriended functions
-  friend void cross(int iN, int ic, int **a, int **b);
+  friend void cross(int iN, int iC, Chromosome** c, int t1, int t2, int iCal, int iFat, int iSod, int iCarb, int iProt, std::vector<Product*>* products);
   friend double goalFunction(int iCal, int iFat, int iSod, int iCarb, int iProt, Chromosome* c, std::vector<Product*>* products);
   //friend void selection(Chromosome **pop, int N);
 
